@@ -6,7 +6,10 @@ export const NumFact = () => {
 
     const [data, setData] = useState(['']);
     const [fact, setFfact] = useState(false);
+
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
+
     const [change, setChange] = useState(false);
 
     const [month, setMonth] = useState('12');
@@ -16,6 +19,7 @@ export const NumFact = () => {
 
         setData('');
         setLoading(true);
+        setError(false);
         setChange(false);
 
         const options = {
@@ -28,10 +32,17 @@ export const NumFact = () => {
             }
           };
           
-          axios.request(options)
-          .then(res => setData(res.data))
-          .catch(error => console.log(error))
-          .finally(()=>setLoading(false))
+
+          if(day > 31 || day <= 0) {
+            setError(true);
+            setLoading(false);
+          } else {
+            axios.request(options)
+            .then(res => setData(res.data))
+            .catch(error => console.log(error))
+            .finally(()=>setLoading(false))
+          }
+          
     }
 
     const handleOnChangeMonth = (e) => {
@@ -61,16 +72,30 @@ export const NumFact = () => {
             <div className='flex gap-16 items-center justify-center w-full'>
                 <div className='flex flex-col text-center'>
                     <label className='font-semibold' htmlFor="month">Mes</label>
-                    <input onChange={handleOnChangeMonth} max={12} min={1} className='rounded-xl bg-blue-100 text-4xl font-bold text-center text-blue-400 p-2 border mt-2 w-24 h-24' type="number" name="month" id="month" />
+                    <select
+                        value={month}
+                        onChange={handleOnChangeMonth} 
+                        className='rounded-xl bg-blue-100 text-2xl font-bold text-center text-blue-400 p-2 border mt-2 w-full h-20' type="number" 
+                        name="month" 
+                        id="month">
+                            {
+                                months.map((item, i) => {
+                                    return(
+                                        <option key={i} value={i + 1}>{item.name}</option>
+                                    )
+                                })
+                            }
+                    </select>
                 </div>
                 <div className='flex flex-col text-center'>
                     <label className='font-semibold' htmlFor="day">Día</label>
-                    <input onChange={handleOnChangeDay} max={31} min={1} className='rounded-xl bg-blue-100 text-4xl font-bold text-center text-blue-400 p-2 border mt-2 w-24 h-24' type="number" name="day" id="day" />
+                    <input value={day} onChange={handleOnChangeDay} max={31} min={1} className='rounded-xl bg-blue-100 text-2xl font-bold text-center text-blue-400 p-2 border mt-2 w-24 h-20' type="number" name="day" id="day" />
                 </div>
             </div>
         </div>
+        {error && <p className='mt-4 text-red-500 text-center'>Debe ser un día del mes válido.</p>}
         {
-            loading || change ? <p className='mt-4'>{loading ? 'Cargando...' : 'Coloca una fecha para buscar un increíble dato curioso.'}</p> :
+            loading || change || error ? <div className='mt-4 flex items-center justify-center relative'>{loading ? <span className="loader my-6"></span> : 'Coloca una fecha para buscar un increíble dato curioso.'}</div> :
             <div className='mt-8'>
                 <div>
                     <h1 className='text-lg font-bold'>¿Qué pasó...?</h1>
@@ -79,19 +104,6 @@ export const NumFact = () => {
             </div>
         }
         <button className='mt-4 bg-blue-600 text-white font-semibold px-2 py-3 w-full rounded-xl' onClick={()=>{setFfact(!fact)}}>Otro Dato</button>
-
-        <div className='p-3 bg-blue-100 rounded-xl mt-2'>
-            <div className='grid grid-cols-3 gap-2'>
-                {
-                    months.map((item, i)=>{
-                        return(
-                            <button className='h-24 text-center bg-blue-200 font-bold text-lg text-blue-400 rounded-lg' key={i}>{item.name}</button>
-                        )
-                    })
-                }
-            </div>
-            
-        </div>
     </section>
   )
 }
